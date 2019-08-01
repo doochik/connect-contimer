@@ -16,27 +16,20 @@ module.exports = function requestTimeMiddleware(label, cb) {
         var timerStop = timer.start({}, label);
 
         res
-            .on('finish', onFinish)
-            .on('close', onClose);
+            .on('finish', onRequestEnd)
+            .on('close', onRequestEnd);
 
-        function onFinish() {
+        function onRequestEnd() {
             unbind();
 
             var timeObj = timerStop();
             cb(timeObj.time, req);
         }
 
-        function onClose() {
-            unbind();
-
-            // FIXME: what should we do here?
-            cb(0, req);
-        }
-
         function unbind() {
             res
-                .removeListener('close', onClose)
-                .removeListener('finish', onFinish);
+                .removeListener('close', onRequestEnd)
+                .removeListener('finish', onRequestEnd);
         }
 
         next();
